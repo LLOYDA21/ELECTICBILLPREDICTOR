@@ -10,16 +10,11 @@ st.set_page_config(
     page_icon="⚡"
 )
 
-# ---- FUNCTION TO SET DARK BACKGROUND AND STYLES ----
-def set_custom_theme():
+# ---- FUNCTION TO SET TEXT COLORS ----
+def set_text_colors():
     st.markdown(
         """
         <style>
-        /* Set background black */
-        .stApp {
-            background-color: #000000 !important;
-        }
-
         /* Main title white */
         h1 {
             color: #FFFFFF !important;
@@ -33,7 +28,7 @@ def set_custom_theme():
         /* Style number input boxes */
         div.stNumberInput > div > div > input {
             background-color: #FFEB3B !important;  /* Bright yellow */
-            color: #000000 !important;             /* Black input text */
+            color: #000000 !important;            /* Black text */
             border: 2px solid #F57F17 !important;
             border-radius: 8px !important;
             padding: 12px !important;
@@ -75,8 +70,8 @@ def set_custom_theme():
         unsafe_allow_html=True
     )
 
-# Apply custom theme
-set_custom_theme()
+# Apply text color settings
+set_text_colors()
 
 # Load ML model
 model = joblib.load("cepalco_model.pkl")

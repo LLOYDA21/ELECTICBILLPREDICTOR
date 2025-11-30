@@ -25,37 +25,37 @@ def set_bg_local(image_file):
             background-position: center;
         }}
 
-        /* Make text readable over dark background */
+        /* Default text color to white */
         .stApp * {{
             color: white !important;
         }}
 
-        /* Style number input boxes to be yellow */
+        /* Style number input boxes */
         div.stNumberInput > div > div > input {{
             background-color: #FFEB3B !important;  /* Bright yellow */
-            color: #000000 !important;           /* Black text for good contrast */
-            border: 2px solid #F57F17 !important;  /* Orange border for visibility */
+            color: #000000 !important;           /* Black input text */
+            border: 2px solid #F57F17 !important;  
             border-radius: 8px !important;
-            padding: 10px !important;
+            padding: 12px !important;
             font-weight: bold;
+            font-size: 16px !important;
         }}
 
-        /* Additional styling for number input containers */
+        /* Input container styling */
         div.stNumberInput > div > div {{
             background-color: rgba(255, 235, 59, 0.1) !important;
             border-radius: 8px !important;
             padding: 5px;
         }}
 
-        /* Style the input widget containers */
-        div.element-container .stNumberInput {{
-            background-color: rgba(255, 235, 59, 0.1);
-            border-radius: 10px;
-            padding: 10px;
-            margin: 5px 0;
+        /* Style input labels to be bold */
+        label[data-baseweb="label"] {{
+            font-weight: bold !important;
+            color: white !important;
+            font-size: 16px !important;
         }}
 
-        /* Style buttons */
+        /* Buttons styling */
         .stButton > button {{
             background-color: rgba(0,0,0,0.6);
             color: white;
@@ -64,7 +64,7 @@ def set_bg_local(image_file):
             padding: 10px 20px;
         }}
 
-        /* Ensure the input focus state is also yellow */
+        /* Input focus effect */
         div.stNumberInput > div > div > input:focus {{
             background-color: #FFEB3B !important;
             border-color: #F57F17 !important;
@@ -75,7 +75,7 @@ def set_bg_local(image_file):
         unsafe_allow_html=True
     )
 
-# Set your local image here
+# Set your local background image
 set_bg_local("background.jpg")  # Replace with your file path
 
 # Load ML model
@@ -99,25 +99,25 @@ col1, col2 = st.columns(2)
 
 with col1:
     month = st.number_input(
-        "Month (1–12)",
+        "**Month (1–12)**",
         min_value=1,
         max_value=12,
         help="Enter the current month as a number (e.g., January = 1)"
     )
     kwh = st.number_input(
-        "Monthly kWh Usage",
+        "**Monthly kWh Usage**",
         min_value=0,
         help="Total electricity consumed in kilowatt-hours"
     )
 
 with col2:
     peak = st.number_input(
-        "Daily Peak Hours",
+        "**Daily Peak Hours**",
         min_value=0,
         help="Average number of hours per day during peak electricity usage"
     )
     apps = st.number_input(
-        "Number of Active Appliances",
+        "**Number of Active Appliances**",
         min_value=0,
         help="Number of appliances regularly used at home"
     )
@@ -145,5 +145,4 @@ st.write("---")
 st.markdown(
     "<p style='text-align:center; font-size:12px; color:lightgray;'>Powered by Machine Learning Model | CEPALCO</p>",
     unsafe_allow_html=True
-
 )

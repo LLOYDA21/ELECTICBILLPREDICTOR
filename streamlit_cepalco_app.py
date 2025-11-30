@@ -25,10 +25,13 @@ def set_bg_local(image_file):
             background-position: center;
         }}
 
-        /* Default text color to white */
+        /* Default text color to yellow for inputs and labels */
         .stApp * {{
-            color: white !important;
+            color: yellow !important;
         }}
+
+        /* Keep main title gold */
+        h1 {{ color: #FFD700 !important; }}
 
         /* Style number input boxes */
         div.stNumberInput > div > div > input {{
@@ -48,17 +51,17 @@ def set_bg_local(image_file):
             padding: 5px;
         }}
 
-        /* Style input labels to be bold */
+        /* Style input labels to be bold and yellow */
         label[data-baseweb="label"] {{
             font-weight: bold !important;
-            color: white !important;
+            color: yellow !important;
             font-size: 16px !important;
         }}
 
         /* Buttons styling */
         .stButton > button {{
             background-color: rgba(0,0,0,0.6);
-            color: white;
+            color: yellow;
             font-weight: bold;
             border-radius: 10px;
             padding: 10px 20px;
@@ -84,7 +87,7 @@ model = joblib.load("cepalco_model.pkl")
 # ---- HEADER ----
 st.markdown(
     """
-    <h1 style='text-align: center; color: #FFD700; text-shadow: 2px 2px 4px #000000;'>⚡ CEPALCO Electricity Bill Predictor ⚡</h1>
+    <h1 style='text-align: center; text-shadow: 2px 2px 4px #000000;'>⚡ CEPALCO Electricity Bill Predictor ⚡</h1>
     <p style='text-align: center; font-size:16px; text-shadow: 1px 1px 2px #000000;'>Estimate your monthly electricity bill based on usage and appliances.</p>
     """,
     unsafe_allow_html=True
@@ -133,7 +136,7 @@ if st.button("💡 Predict Electricity Bill"):
     st.markdown(
         f"""
         <div style='background-color: rgba(0,0,0,0.6); padding:20px; border-radius:10px; text-align:center;'>
-            <h2 style='color:#FFD700;'>Estimated Electricity Bill</h2>
+            <h2 style='color:yellow;'>Estimated Electricity Bill</h2>
             <h1 style='color:#00FF00;'>₱{prediction:,.2f}</h1>
         </div>
         """,

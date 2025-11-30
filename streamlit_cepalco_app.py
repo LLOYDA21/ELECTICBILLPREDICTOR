@@ -10,34 +10,23 @@ st.set_page_config(
     page_icon="⚡"
 )
 
-# ---- FUNCTION TO SET BACKGROUND IMAGE AND STYLES ----
-def set_bg_local(image_file):
-    with open(image_file, "rb") as f:
-        encoded = base64.b64encode(f.read()).decode()
+# ---- FUNCTION TO SET TEXT COLORS ----
+def set_text_colors():
     st.markdown(
-        f"""
+        """
         <style>
-        /* Set background image */
-        .stApp {{
-            background-image: url("data:image/png;base64,{encoded}");
-            background-size: cover;
-            background-attachment: fixed;
-            background-position: center;
-        }}
-
-        /* Main title white with 3D effect */
-        h1 {{
+        /* Main title white */
+        h1 {
             color: #FFFFFF !important;
-            text-shadow: 2px 2px 4px #000000, 4px 4px 6px #333333, 6px 6px 8px #555555;
-        }}
+        }
 
-        /* All other text white */
-        .stApp *:not(h1) {{
-            color: #FFFFFF !important;
-        }}
+        /* All other text black */
+        .stApp *:not(h1) {
+            color: #000000 !important;
+        }
 
         /* Style number input boxes */
-        div.stNumberInput > div > div > input {{
+        div.stNumberInput > div > div > input {
             background-color: #FFEB3B !important;  /* Bright yellow */
             color: #000000 !important;            /* Black text */
             border: 2px solid #F57F17 !important;
@@ -45,44 +34,44 @@ def set_bg_local(image_file):
             padding: 12px !important;
             font-weight: bold;
             font-size: 16px !important;
-        }}
+        }
 
         /* Input container styling */
-        div.stNumberInput > div > div {{
+        div.stNumberInput > div > div {
             background-color: rgba(255, 235, 59, 0.1) !important;
             border-radius: 8px !important;
             padding: 5px;
-        }}
+        }
 
-        /* Style input labels bold and white */
-        label[data-baseweb="label"] {{
+        /* Style input labels bold and black */
+        label[data-baseweb="label"] {
             font-weight: bold !important;
-            color: white !important;
+            color: black !important;
             font-size: 16px !important;
-        }}
+        }
 
         /* Buttons styling */
-        .stButton > button {{
+        .stButton > button {
             background-color: rgba(255,255,255,0.1);
-            color: white;
+            color: black;
             font-weight: bold;
             border-radius: 10px;
             padding: 10px 20px;
-        }}
+        }
 
         /* Input focus effect */
-        div.stNumberInput > div > div > input:focus {{
+        div.stNumberInput > div > div > input:focus {
             background-color: #FFEB3B !important;
             border-color: #F57F17 !important;
             box-shadow: 0 0 0 2px rgba(245, 127, 23, 0.3) !important;
-        }}
+        }
         </style>
         """,
         unsafe_allow_html=True
     )
 
-# Apply background image and styles
-set_bg_local("background.jpg")  # Replace with your file path
+# Apply text color settings
+set_text_colors()
 
 # Load ML model
 model = joblib.load("cepalco_model.pkl")
@@ -90,7 +79,7 @@ model = joblib.load("cepalco_model.pkl")
 # ---- HEADER ----
 st.markdown(
     """
-    <h1 style='text-align: center;'>⚡ CEPALCO Electricity Bill Predictor ⚡</h1>
+    <h1 style='text-align: center; text-shadow: 2px 2px 4px #000000;'>⚡ CEPALCO Electricity Bill Predictor ⚡</h1>
     <p style='text-align: center; font-size:16px;'>Estimate your monthly electricity bill based on usage and appliances.</p>
     """,
     unsafe_allow_html=True
@@ -139,7 +128,7 @@ if st.button("💡 Predict Electricity Bill"):
     st.markdown(
         f"""
         <div style='background-color: rgba(0,0,0,0.6); padding:20px; border-radius:10px; text-align:center;'>
-            <h2 style='color:white;'>Estimated Electricity Bill</h2>
+            <h2 style='color:black;'>Estimated Electricity Bill</h2>
             <h1 style='color:#00FF00;'>₱{prediction:,.2f}</h1>
         </div>
         """,
@@ -149,6 +138,6 @@ if st.button("💡 Predict Electricity Bill"):
 # ---- FOOTER ----
 st.write("---")
 st.markdown(
-    "<p style='text-align:center; font-size:12px; color:white;'>Powered by Machine Learning Model | CEPALCO</p>",
+    "<p style='text-align:center; font-size:12px; color:gray;'>Powered by Machine Learning Model | CEPALCO</p>",
     unsafe_allow_html=True
 )

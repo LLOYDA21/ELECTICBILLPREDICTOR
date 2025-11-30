@@ -10,23 +10,33 @@ st.set_page_config(
     page_icon="⚡"
 )
 
-# ---- FUNCTION TO SET TEXT COLORS ----
-def set_text_colors():
+# ---- FUNCTION TO SET BACKGROUND IMAGE ----
+def set_bg_local(image_file):
+    with open(image_file, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode()
     st.markdown(
-        """
+        f"""
         <style>
+        /* Set background image */
+        .stApp {{
+            background-image: url("data:image/png;base64,{encoded}");
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+        }}
+
         /* Main title white */
-        h1 {
+        h1 {{
             color: #FFFFFF !important;
-        }
+        }}
 
         /* All other text black */
-        .stApp *:not(h1) {
+        .stApp *:not(h1) {{
             color: #000000 !important;
-        }
+        }}
 
         /* Style number input boxes */
-        div.stNumberInput > div > div > input {
+        div.stNumberInput > div > div > input {{
             background-color: #FFEB3B !important;  /* Bright yellow */
             color: #000000 !important;            /* Black text */
             border: 2px solid #F57F17 !important;
@@ -34,48 +44,47 @@ def set_text_colors():
             padding: 12px !important;
             font-weight: bold;
             font-size: 16px !important;
-        }
+        }}
 
         /* Input container styling */
-        div.stNumberInput > div > div {
+        div.stNumberInput > div > div {{
             background-color: rgba(255, 235, 59, 0.1) !important;
             border-radius: 8px !important;
             padding: 5px;
-        }
+        }}
 
         /* Style input labels bold and black */
-        label[data-baseweb="label"] {
+        label[data-baseweb="label"] {{
             font-weight: bold !important;
             color: black !important;
             font-size: 16px !important;
-        }
+        }}
 
         /* Buttons styling */
-        .stButton > button {
+        .stButton > button {{
             background-color: rgba(255,255,255,0.1);
             color: black;
             font-weight: bold;
             border-radius: 10px;
             padding: 10px 20px;
-        }
+        }}
 
         /* Input focus effect */
-        div.stNumberInput > div > div > input:focus {
+        div.stNumberInput > div > div > input:focus {{
             background-color: #FFEB3B !important;
             border-color: #F57F17 !important;
             box-shadow: 0 0 0 2px rgba(245, 127, 23, 0.3) !important;
-        }
+        }}
         </style>
         """,
         unsafe_allow_html=True
     )
 
-# Apply text color settings
-set_text_colors()
+# Apply background image
+set_bg_local("background.jpg")  # Replace with your file path
 
 # Load ML model
 model = joblib.load("cepalco_model.pkl")
-
 
 # ---- HEADER ----
 st.markdown(
@@ -142,5 +151,3 @@ st.markdown(
     "<p style='text-align:center; font-size:12px; color:gray;'>Powered by Machine Learning Model | CEPALCO</p>",
     unsafe_allow_html=True
 )
-
-

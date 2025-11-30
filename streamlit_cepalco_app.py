@@ -10,7 +10,7 @@ st.set_page_config(
     page_icon="⚡"
 )
 
-# ---- FUNCTION TO SET BACKGROUND IMAGE ----
+# ---- FUNCTION TO SET BACKGROUND IMAGE AND STYLES ----
 def set_bg_local(image_file):
     with open(image_file, "rb") as f:
         encoded = base64.b64encode(f.read()).decode()
@@ -25,14 +25,15 @@ def set_bg_local(image_file):
             background-position: center;
         }}
 
-        /* Main title white */
+        /* Main title white with 3D effect */
         h1 {{
             color: #FFFFFF !important;
+            text-shadow: 2px 2px 4px #000000, 4px 4px 6px #333333, 6px 6px 8px #555555;
         }}
 
-        /* All other text black */
+        /* All other text white */
         .stApp *:not(h1) {{
-            color: #000000 !important;
+            color: #FFFFFF !important;
         }}
 
         /* Style number input boxes */
@@ -53,17 +54,17 @@ def set_bg_local(image_file):
             padding: 5px;
         }}
 
-        /* Style input labels bold and black */
+        /* Style input labels bold and white */
         label[data-baseweb="label"] {{
             font-weight: bold !important;
-            color: black !important;
+            color: white !important;
             font-size: 16px !important;
         }}
 
         /* Buttons styling */
         .stButton > button {{
             background-color: rgba(255,255,255,0.1);
-            color: black;
+            color: white;
             font-weight: bold;
             border-radius: 10px;
             padding: 10px 20px;
@@ -80,7 +81,7 @@ def set_bg_local(image_file):
         unsafe_allow_html=True
     )
 
-# Apply background image
+# Apply background image and styles
 set_bg_local("background.jpg")  # Replace with your file path
 
 # Load ML model
@@ -89,7 +90,7 @@ model = joblib.load("cepalco_model.pkl")
 # ---- HEADER ----
 st.markdown(
     """
-    <h1 style='text-align: center; text-shadow: 2px 2px 4px #000000;'>⚡ CEPALCO Electricity Bill Predictor ⚡</h1>
+    <h1 style='text-align: center;'>⚡ CEPALCO Electricity Bill Predictor ⚡</h1>
     <p style='text-align: center; font-size:16px;'>Estimate your monthly electricity bill based on usage and appliances.</p>
     """,
     unsafe_allow_html=True
@@ -138,7 +139,7 @@ if st.button("💡 Predict Electricity Bill"):
     st.markdown(
         f"""
         <div style='background-color: rgba(0,0,0,0.6); padding:20px; border-radius:10px; text-align:center;'>
-            <h2 style='color:black;'>Estimated Electricity Bill</h2>
+            <h2 style='color:white;'>Estimated Electricity Bill</h2>
             <h1 style='color:#00FF00;'>₱{prediction:,.2f}</h1>
         </div>
         """,
@@ -148,6 +149,6 @@ if st.button("💡 Predict Electricity Bill"):
 # ---- FOOTER ----
 st.write("---")
 st.markdown(
-    "<p style='text-align:center; font-size:12px; color:gray;'>Powered by Machine Learning Model | CEPALCO</p>",
+    "<p style='text-align:center; font-size:12px; color:white;'>Powered by Machine Learning Model | CEPALCO</p>",
     unsafe_allow_html=True
 )

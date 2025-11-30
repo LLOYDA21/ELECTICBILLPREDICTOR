@@ -1,40 +1,81 @@
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 import joblib
 
-# --- 1. LOAD FIXED DATASET ---x
-# Make sure this file is in the same folder as this script
-data = pd.read_csv("cepalco_household_usage_fixed.csv")
+# =======================
+# 1. LOAD OR GENERATE DATA
+# =======================
 
-print("Dataset Loaded Successfully!")
-print("Columns:", data.columns.tolist())
+try:
+    data = pd.read_csv("cepalco_synthetic_dataset.csv")
+    print("Loaded existing dataset: cepalco_synthetic_dataset.csv")
+except:
+    print("Dataset not found — generating new synthetic dataset...")
 
-# --- 2. SELECT INPUT COLUMNS AND TARGET COLUMN ---
-X = data[["month", "kwh_usage", "peak_hours", "appliances"]]  # FEATURES
-y = data["bill"]  # TARGET
+    np.random.seed(42)
+    rows = 1000
 
-# --- 3. SPLIT DATA ---
+    data = pd.DataFrame({
+        "month": np.random.randint(1, 13, rows),
+        "kwh_usage": np.random.uniform(100, 900, rows),
+        "peak_hours": np.random.randint(1, 9, rows),
+        "appliances": np.random.randint(1, 15, rows),
+    })
+
+    RATE = 12.52
+    data["bill"] = data["kwh_usage"] * RATE
+
+    data.to_csv("cepalco_synthetic_dataset.csv", index=False)
+    print("Created and saved new dataset!")
+
+print("\nDataset sample:")
+print(data.head())
+
+# =======================
+# 2. FEATURE SELECTION
+# =======================
+
+X = data[["month", "kwh_usage", "peak_hours", "appliances"]]  # Input features
+y = data["bill"]                                              # Target output
+
+# =======================
+# 3. TRAIN-TEST SPLIT
+# =======================
+
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42
 )
 
-# --- 4. TRAIN MODEL ---
+# =======================
+# 4. TRAIN MODEL
+# =======================
+
 model = RandomForestRegressor(
-    n_estimators=400,
-    random_state=42
+    n_estimators=500,
+    random_state=42,
+    max_depth=12
 )
 
-print("Training model...")
+print("\nTraining model...")
 model.fit(X_train, y_train)
 
-# --- 5. CHECK ACCURACY ---
+# =======================
+# 5. EVALUATE MODEL
+# =======================
+
 predictions = model.predict(X_test)
 mse = mean_squared_error(y_test, predictions)
-print("\nTraining Complete!")
-print("Mean Squared Error:", mse)
 
-# --- 6. SAVE MODEL ---
+print("\nTraining Complete!")
+print(f"Mean Squared Error: {mse:,.4f}")
+print(f"Root MSE: {mse**0.5:,.4f}")
+
+# =======================
+# 6. SAVE TRAINED MODEL
+# =======================
+
 joblib.dump(model, "cepalco_model.pkl")
-print("\nModel saved as cepalco_model.pkl")
+print("\nSaved trained model as: cepalco_model.pkl")

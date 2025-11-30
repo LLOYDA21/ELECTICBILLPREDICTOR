@@ -76,6 +76,8 @@ set_text_colors()
 # Load ML model
 model = joblib.load("cepalco_model.pkl")
 
+set_bg_local("background.jpg")
+
 # ---- HEADER ----
 st.markdown(
     """
@@ -141,3 +143,4 @@ st.markdown(
     "<p style='text-align:center; font-size:12px; color:gray;'>Powered by Machine Learning Model | CEPALCO</p>",
     unsafe_allow_html=True
 )
+

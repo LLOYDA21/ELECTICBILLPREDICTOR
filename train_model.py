@@ -35,11 +35,11 @@ print("\nDataset sample:")
 print(data.head())
 
 # =======================
-# 2. FEATURE SELECTION
+# 2. FEATURES
 # =======================
 
-X = data[["month", "kwh_usage", "peak_hours", "appliances"]]  # Input features
-y = data["bill"]                                              # Target output
+X = data[["month", "kwh_usage", "peak_hours", "appliances"]]
+y = data["bill"]
 
 # =======================
 # 3. TRAIN-TEST SPLIT
@@ -50,13 +50,13 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # =======================
-# 4. TRAIN MODEL
+# 4. TRAIN OPTIMIZED MODEL
 # =======================
 
 model = RandomForestRegressor(
-    n_estimators=500,
-    random_state=42,
-    max_depth=12
+    n_estimators=100,     # Reduced from 500 → much smaller
+    max_depth=12,
+    random_state=42
 )
 
 print("\nTraining model...")
@@ -74,8 +74,8 @@ print(f"Mean Squared Error: {mse:,.4f}")
 print(f"Root MSE: {mse**0.5:,.4f}")
 
 # =======================
-# 6. SAVE TRAINED MODEL
+# 6. SAVE COMPRESSED MODEL
 # =======================
 
-joblib.dump(model, "cepalco_model.pkl")
-print("\nSaved trained model as: cepalco_model.pkl")
+joblib.dump(model, "cepalco_model.pkl", compress=3)
+print("\nSaved compressed model as 'cepalco_model.pkl'")

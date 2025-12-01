@@ -119,10 +119,6 @@ if st.button("Predict kWh Consumption"):
     kwh_rate = 12.52
     expected_bill = prediction * kwh_rate
     
-    # --- FIX: Display Both Results Correctly in the Custom Box ---
-    # The image shows the first prediction is outside the intended box 
-    # and the second has unrendered HTML tags.
-    # This single st.markdown block ensures both are rendered as desired.
     st.markdown(
         f"""
         <div class="prediction-box">
@@ -135,7 +131,6 @@ if st.button("Predict kWh Consumption"):
             <div class="green-label">Expected Daily Electric Bill</div>
             <div class="prediction-value">{expected_bill:.2f} currency units</div>
         </div>
-        """,
         unsafe_allow_html=True
     )
-    # -----------------------------------------------------------
+

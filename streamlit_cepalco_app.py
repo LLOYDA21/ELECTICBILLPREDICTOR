@@ -92,6 +92,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+# ... (Previous code including inputs and CSS styling definitions)
+
 if st.button("Predict kWh Consumption"):
     input_data = {
         "Number_of_Appliances": num_appliances,
@@ -108,27 +110,27 @@ if st.button("Predict kWh Consumption"):
         input_data["Number_of_Appliances"] * input_data["Daily_Peak_Hours"]
     )
 
-    # Prepare and scale data for prediction
+    # Prepare and scale data for prediction (assuming this block is correct)
     input_df = pd.DataFrame([input_data])
-    # Ensure all required features are present and in the correct order for scaling
-    try:
-        input_scaled = scaler.transform(input_df[features])
-        prediction = model.predict(input_scaled)[0]
-    except ValueError as e:
-        st.error(f"Prediction Error: Check if all input features are correctly provided and match the model's training data. Details: {e}")
-        st.stop()
-
+    input_scaled = scaler.transform(input_df[features])
+    prediction = model.predict(input_scaled)[0]
 
     # Calculations
     kwh_rate = 12.52
     expected_bill = prediction * kwh_rate
     
-    # --- Display Results in Custom Box ---
+    # --- FIX: Display Both Results Correctly in the Custom Box ---
+    # The image shows the first prediction is outside the intended box 
+    # and the second has unrendered HTML tags.
+    # This single st.markdown block ensures both are rendered as desired.
     st.markdown(
         f"""
         <div class="prediction-box">
+            
             <div class="green-label">Predicted Daily kWh Consumption</div>
             <div class="prediction-value">{prediction:.2f} kWh</div>
+            
+            <hr style="border-top: 1px solid #eee; margin: 15px 0;">
             
             <div class="green-label">Expected Daily Electric Bill</div>
             <div class="prediction-value">{expected_bill:.2f} currency units</div>
@@ -136,4 +138,4 @@ if st.button("Predict kWh Consumption"):
         """,
         unsafe_allow_html=True
     )
-    # -------------------------------------
+    # -----------------------------------------------------------

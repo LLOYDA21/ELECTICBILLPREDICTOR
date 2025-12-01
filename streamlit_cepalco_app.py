@@ -29,8 +29,10 @@ input_df = pd.DataFrame([input_data])
 input_scaled = scaler.transform(input_df[features])
 prediction = model.predict(input_scaled)[0]
 
+```
 kwh_rate = 12.52  # rate per kWh
 expected_bill = prediction * kwh_rate
 
 st.success(f"Predicted Daily kWh Consumption: {prediction:.2f} kWh")
 st.success(f"Expected Daily Electric Bill: {expected_bill:.2f} currency units")
+```

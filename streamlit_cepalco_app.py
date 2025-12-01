@@ -110,6 +110,10 @@ border-radius: 15px;
 box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 max-width: 700px;
 margin: 30px auto;
+}
+input, .stNumberInput>div>input {
+color: black !important;
+background-color: white !important;
 } </style>
 """, unsafe_allow_html=True
 )

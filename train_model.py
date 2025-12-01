@@ -1,81 +1,95 @@
+{"variant":"standard","id":"89716","title":"Train Model from User CSV"}
 import pandas as pd
-import numpy as np
+import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error
-import joblib
+from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.preprocessing import StandardScaler
 
-# =======================
-# 1. LOAD OR GENERATE DATA
-# =======================
+# ============================================================
+# 1. ASK USER FOR CSV FILE
+# ============================================================
+csv_file = "cepalco_synthetic_enhanced.csv"
 
-try:
-    data = pd.read_csv("cepalco_synthetic_dataset.csv")
-    print("Loaded existing dataset: cepalco_synthetic_dataset.csv")
-except:
-    print("Dataset not found — generating new synthetic dataset...")
+# Load the CSV
+df = pd.read_csv(csv_file)
+print(f"Loaded {len(df)} rows from {csv_file}")
 
-    np.random.seed(42)
-    rows = 1000
+# ============================================================
+# 2. DEFINE FEATURES AND TARGET
+# ============================================================
+# Make sure your CSV has these columns:
+features = [
+    "Number_of_Appliances",
+    "Daily_Peak_Hours",
+    "Aircon_Usage_Hours",
+    "Refrigerator_Count",
+    "Washing_Machine_Usage",
+    "Household_Size",
+    "Month",
+]
 
-    data = pd.DataFrame({
-        "month": np.random.randint(1, 13, rows),
-        "kwh_usage": np.random.uniform(100, 900, rows),
-        "peak_hours": np.random.randint(1, 9, rows),
-        "appliances": np.random.randint(1, 15, rows),
-    })
+target = "kWh_Consumption"
 
-    RATE = 12.52
-    data["bill"] = data["kwh_usage"] * RATE
+# Optional feature engineering
+df["Total_Appliance_Hours"] = df["Number_of_Appliances"] * df["Daily_Peak_Hours"]
+features.append("Total_Appliance_Hours")
 
-    data.to_csv("cepalco_synthetic_dataset.csv", index=False)
-    print("Created and saved new dataset!")
+X = df[features]
+y = df[target]
 
-print("\nDataset sample:")
-print(data.head())
+# ============================================================
+# 3. SCALE FEATURES (optional)
+# ============================================================
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
 
-# =======================
-# 2. FEATURES
-# =======================
-
-X = data[["month", "kwh_usage", "peak_hours", "appliances"]]
-y = data["bill"]
-
-# =======================
-# 3. TRAIN-TEST SPLIT
-# =======================
-
+# ============================================================
+# 4. TRAIN/TEST SPLIT
+# ============================================================
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
+    X_scaled, y, test_size=0.2, random_state=42
 )
 
-# =======================
-# 4. TRAIN OPTIMIZED MODEL
-# =======================
-
+# ============================================================
+# 5. CREATE RANDOM FOREST MODEL
+# ============================================================
 model = RandomForestRegressor(
-    n_estimators=100,     # Reduced from 500 → much smaller
-    max_depth=12,
-    random_state=42
+    n_estimators=300,
+    max_depth=20,
+    min_samples_split=2,
+    min_samples_leaf=1,
+    max_features='sqrt',
+    random_state=42,
+    n_jobs=-1,
 )
 
-print("\nTraining model...")
+# ============================================================
+# 6. TRAIN MODEL
+# ============================================================
+print("Training model...")
 model.fit(X_train, y_train)
 
-# =======================
-# 5. EVALUATE MODEL
-# =======================
+# ============================================================
+# 7. EVALUATE MODEL
+# ============================================================
+preds = model.predict(X_test)
+mae = mean_absolute_error(y_test, preds)
+r2 = r2_score(y_test, preds)
 
-predictions = model.predict(X_test)
-mse = mean_squared_error(y_test, predictions)
+print(f"\nModel Performance:")
+print(f"MAE: {mae:.3f}")
+print(f"R² Score: {r2:.3f}")
 
-print("\nTraining Complete!")
-print(f"Mean Squared Error: {mse:,.4f}")
-print(f"Root MSE: {mse**0.5:,.4f}")
+# ============================================================
+# 8. SAVE MODEL
+# ============================================================
+save_data = {
+    "model": model,
+    "scaler": scaler,
+    "features": features,
+}
 
-# =======================
-# 6. SAVE COMPRESSED MODEL
-# =======================
-
-joblib.dump(model, "cepalco_model.pkl", compress=3)
-print("\nSaved compressed model as 'cepalco_model.pkl'")
+model_file = "cepalco_model_from_csv.pkl"
+joblib.dump(save_data, model_file, compress=3)
+print(f"\nModel Saved: {model_file}")

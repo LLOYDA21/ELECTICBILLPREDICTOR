@@ -21,15 +21,18 @@ washing_machine_hours = st.number_input("Washing Machine Usage Hours", min_value
 household_size = st.number_input("Household Size", min_value=1, step=1)
 month = st.number_input("Month (1-12)", min_value=1, max_value=12, step=1)
 
+result_kwh = st.empty()
+result_bill = st.empty()
+
 if st.button("Predict kWh Consumption"):
     input_data = {
-"Number_of_Appliances": num_appliances,
-"Daily_Peak_Hours": daily_peak_hours,
-"Aircon_Usage_Hours": aircon_hours,
-"Refrigerator_Count": fridge_count,
-"Washing_Machine_Usage": washing_machine_hours,
-"Household_Size": household_size,
-"Month": month
+    "Number_of_Appliances": num_appliances,
+    "Daily_Peak_Hours": daily_peak_hours,
+    "Aircon_Usage_Hours": aircon_hours,
+    "Refrigerator_Count": fridge_count,
+    "Washing_Machine_Usage": washing_machine_hours,
+    "Household_Size": household_size,
+    "Month": month
 }
 input_data["Total_Appliance_Hours"] = input_data["Number_of_Appliances"] * input_data["Daily_Peak_Hours"]
 
@@ -40,5 +43,5 @@ prediction = model.predict(input_scaled)[0]
 kwh_rate = 12.52
 expected_bill = prediction * kwh_rate
 
-st.success(f"Predicted Daily kWh Consumption: {prediction:.2f} kWh")
-st.success(f"Expected Daily Electric Bill: {expected_bill:.2f} PESOS")
+result_kwh.success(f"Predicted Daily kWh Consumption: {prediction:.2f} kWh")
+result_bill.success(f"Expected Daily Electric Bill: {expected_bill:.2f} currency units")

@@ -26,15 +26,15 @@ result_bill = st.empty()
 
 if st.button("Predict kWh Consumption"):
     input_data = {
-    "Number_of_Appliances": num_appliances,
-    "Daily_Peak_Hours": daily_peak_hours,
-    "Aircon_Usage_Hours": aircon_hours,
-    "Refrigerator_Count": fridge_count,
-    "Washing_Machine_Usage": washing_machine_hours,
-    "Household_Size": household_size,
-    "Month": month
-}
-input_data["Total_Appliance_Hours"] = input_data["Number_of_Appliances"] * input_data["Daily_Peak_Hours"]
+        "Number_of_Appliances": num_appliances,
+        "Daily_Peak_Hours": daily_peak_hours,
+        "Aircon_Usage_Hours": aircon_hours,
+        "Refrigerator_Count": fridge_count,
+        "Washing_Machine_Usage": washing_machine_hours,
+        "Household_Size": household_size,
+        "Month": month
+    }
+    input_data["Total_Appliance_Hours"] = input_data["Number_of_Appliances"] * input_data["Daily_Peak_Hours"]
 
 input_df = pd.DataFrame([input_data])
 input_scaled = scaler.transform(input_df[features])
@@ -45,3 +45,4 @@ expected_bill = prediction * kwh_rate
 
 result_kwh.success(f"Predicted Daily kWh Consumption: {prediction:.2f} kWh")
 result_bill.success(f"Expected Daily Electric Bill: {expected_bill:.2f} currency units")
+

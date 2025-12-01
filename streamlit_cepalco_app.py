@@ -25,10 +25,11 @@ input_data["Month"] = st.number_input("Month (1-12)", min_value=1, max_value=12,
 input_data["Total_Appliance_Hours"] = input_data["Number_of_Appliances"] * input_data["Daily_Peak_Hours"]
 
 if st.button("Predict kWh Consumption"):
-input_df = pd.DataFrame([input_data])
+  input_df = pd.DataFrame([input_data])
 input_scaled = scaler.transform(input_df[features])
 prediction = model.predict(input_scaled)[0]
 kwh_rate = 12.52
 expected_bill = prediction * kwh_rate
 st.success(f"Predicted Daily kWh Consumption: {prediction:.2f} kWh")
 st.success(f"Expected Daily Electric Bill: {expected_bill:.2f} currency units")
+

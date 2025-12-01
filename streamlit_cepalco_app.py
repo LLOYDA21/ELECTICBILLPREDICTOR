@@ -73,5 +73,7 @@ if st.button("Predict kWh Consumption"):
     expected_bill = prediction * kwh_rate
 
     result_kwh.success(f"Predicted Monthly kWh Consumption: {prediction:.2f} kWh")
-    result_bill.success(f"Expected Monthly Electric Bill: {expected_bill:.2f} currency units")
+    result_bill.success(f"Expected Monthly Electric Bill: {expected_bill:.2f} pesos
+    ")
+
 

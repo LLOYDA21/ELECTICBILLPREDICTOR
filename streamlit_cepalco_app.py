@@ -29,7 +29,7 @@ input_data = {
 "Refrigerator_Count": fridge_count,
 "Washing_Machine_Usage": washing_machine_hours,
 "Household_Size": household_size,
-"Month": month,
+"Month": month
 }
 input_data["Total_Appliance_Hours"] = input_data["Number_of_Appliances"] * input_data["Daily_Peak_Hours"]
 input_df = pd.DataFrame([input_data])

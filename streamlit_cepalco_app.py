@@ -42,43 +42,42 @@ if "users" not in st.session_state:
     }
 
 # ----------------------------
-# LOGIN / SIGNUP SECTION
+# LOGIN / SIGNUP (NO SELECT MODE)
 # ----------------------------
 if not st.session_state.logged_in:
-    st.title("Login or Sign Up")
+    st.title("Welcome")
+    st.subheader("Login")
 
-    mode = st.radio("Select Mode", ["Login", "Sign Up"])
+    # LOGIN FIELDS
+    login_email = st.text_input("Login Email")
+    login_pass = st.text_input("Login Password", type="password")
 
-    # -------------------- LOGIN --------------------
-    if mode == "Login":
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        if login_email in st.session_state.users and st.session_state.users[login_email]["password"] == login_pass:
+            st.session_state.logged_in = True
+            st.session_state.user = st.session_state.users[login_email]["name"]
+            st.experimental_rerun()
+        else:
+            st.error("Invalid email or password")
 
-        if st.button("Login"):
-            if email in st.session_state.users and st.session_state.users[email]["password"] == password:
-                st.session_state.logged_in = True
-                st.session_state.user = st.session_state.users[email]["name"]
-                st.experimental_rerun()
-            else:
-                st.error("Invalid email or password")
+    st.subheader("Sign Up")
 
-    # -------------------- SIGN UP --------------------
-    else:
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-        name = st.text_input("Full Name")
+    # SIGN UP FIELDS
+    signup_email = st.text_input("Sign Up Email")
+    signup_pass = st.text_input("Sign Up Password", type="password")
+    signup_name = st.text_input("Full Name")
 
-        if st.button("Sign Up"):
-            if email in st.session_state.users:
-                st.error("Email already registered")
-            elif not name:
-                st.error("Please enter your full name")
-            else:
-                st.session_state.users[email] = {
-                    "password": password,
-                    "name": name
-                }
-                st.success("Account created! Please login now.")
+    if st.button("Sign Up"):
+        if signup_email in st.session_state.users:
+            st.error("Email already exists")
+        elif not signup_name:
+            st.error("Please enter your name")
+        else:
+            st.session_state.users[signup_email] = {
+                "password": signup_pass,
+                "name": signup_name
+            }
+            st.success("Account created! You may now login.")
 
 # ----------------------------
 # DASHBOARD (AFTER LOGIN)

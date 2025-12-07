@@ -1,116 +1,186 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import base64
+import numpy as np
 
-# ---------------------------------------------------
-# Set Background Image (LOCAL)
-# ---------------------------------------------------
-def set_bg_local(image_file):
-    with open(image_file, "rb") as f:
-        data = f.read()
-        encoded = base64.b64encode(data).decode()
-    page_bg = f"""
-    <style>
-    .stApp {{
-        background-image: url("data:image/jpg;base64,{encoded}");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-    }}
-    </style>
-    """
-    st.markdown(page_bg, unsafe_allow_html=True)
+# ----------------------------------------------------------
+# Load trained model
+# ----------------------------------------------------------
+try:
+    data = joblib.load("cepalco_monthly_model.pkl")
+    model = data["model"]
+    features = data["features"]
+except:
+    st.error("Model file not found! Make sure cepalco_monthly_model.pkl is in the same folder.")
+    st.stop()
 
-set_bg_local("backgrd.jpg")
 
-# ---------------------------------------------------
-# PAGE CONFIG
-# ---------------------------------------------------
-st.set_page_config(page_title="⚡ CEPALCO Monthly Bill Predictor", layout="wide")
-st.title("⚡ CEPALCO Monthly Electricity Bill Predictor")
+# ----------------------------------------------------------
+# Streamlit UI
+# ----------------------------------------------------------
+st.title("📉 Monthly Electricity Consumption Predictor")
+st.write("Predict monthly kWh consumption and electricity bill.")
 
-# ---------------------------------------------------
-# LOAD MODEL
-# ---------------------------------------------------
-model_file = "cepalco_monthly_model.pkl"
-data = joblib.load(model_file)
-model = data["model"]
-scaler = data["scaler"]
-features = data["features"]   # includes weather_* columns
+# ----------------------------------------------------------
+# Input fields
+# ----------------------------------------------------------
+temperature = st.number_input("Temperature (°C)", min_value=-50, max_value=60, value=30)
+humidity = st.number_input("Humidity (%)", min_value=0, max_value=100, value=70)
+occupancy = st.number_input("Occupancy (people)", min_value=1, max_value=50, value=4)
+appliances = st.number_input("Number of Appliances Used", min_value=1, max_value=50, value=12)
 
-# List of weather conditions from training
-weather_options = [col.replace("weather_", "") for col in features if col.startswith("weather_")]
+day = st.selectbox(
+    "Day of Week",
+    ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+)
 
-# ---------------------------------------------------
-# USER INPUT FORM
-# ---------------------------------------------------
-st.header("Enter Required Information")
+tariff = st.number_input("Tariff (₱ per kWh)", min_value=0.01, value=12.52)
 
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    temperature = st.number_input("Temperature (°C)", min_value=-10.0, max_value=50.0, step=0.1)
-    humidity = st.number_input("Humidity (%)", min_value=0.0, max_value=100.0, step=0.1)
-    occupancy = st.number_input("Number of People in Household", min_value=1, step=1)
-
-with col2:
-    appliances = st.number_input("Number of Appliances Used", min_value=0, step=1)
-    day_of_week = st.selectbox("Day of Week", 
-        ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    )
-    
-with col3:
-    tariff = st.number_input("CEPALCO Rate per kWh (₱)", min_value=1.0, value=12.52, step=0.1)
-    weather = st.selectbox("Weather Condition", weather_options)
-
-# Mapping day to number
+# ----------------------------------------------------------
+# Convert day to numeric
+# ----------------------------------------------------------
 day_map = {
-    "Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3,
-    "Friday": 4, "Saturday": 5, "Sunday": 6
+    "Monday":0,"Tuesday":1,"Wednesday":2,
+    "Thursday":3,"Friday":4,"Saturday":5,"Sunday":6
 }
 
-# Containers for results
-result_kwh = st.empty()
-result_bill = st.empty()
+day_value = day_map[day]
 
-# ---------------------------------------------------
-# PREDICTION
-# ---------------------------------------------------
-if st.button("Predict Monthly Consumption"):
-    
-    # Base input
-    input_data = {
-        "temperature": temperature,
-        "humidity": humidity,
-        "occupancy": occupancy,
-        "number_of_appliances_used": appliances,
-        "day_of_week": day_map[day_of_week],
-        "tariff_rs_per_kwh": tariff
-    }
+# ----------------------------------------------------------
+# Handle weather dummy columns automatically
+# ----------------------------------------------------------
+weather_cols = [c for c in features if c.startswith("weather_")]
 
-    # Add weather encoded columns
-    for col in features:
-        if col.startswith("weather_"):
-            condition = col.replace("weather_", "")
-            input_data[col] = 1 if condition == weather else 0
+weather_inputs = {}
+if weather_cols:
+    st.subheader("Weather Conditions")
+    for col in weather_cols:
+        weather_inputs[col] = st.checkbox(col.replace("weather_", "").capitalize(), value=False)
 
-    # Convert to DataFrame
-    input_df = pd.DataFrame([input_data])
+# ----------------------------------------------------------
+# Build input dataframe
+# ----------------------------------------------------------
+input_dict = {
+    "temperature": temperature,
+    "humidity": humidity,
+    "occupancy": occupancy,
+    "number_of_appliances_used": appliances,
+    "day_of_week": day_value,
+    "tariff_rs_per_kwh": tariff
+}
 
-    # Scale numeric data
-    input_scaled = scaler.transform(input_df[features])
+# add weather values
+for col in weather_cols:
+    input_dict[col] = int(weather_inputs[col])
 
-    # Predict monthly kWh
-    predicted_kwh = model.predict(input_scaled)[0]
-    predicted_kwh = max(predicted_kwh, 0)
+input_df = pd.DataFrame([input_dict])[features]
 
-    # Compute bill
-    expected_bill = predicted_kwh * tariff
+# ----------------------------------------------------------
+# Prediction
+# ----------------------------------------------------------
+if st.button("🔮 Predict"):
 
-    # ---------------------------------------------------
-    # DISPLAY RESULTS
-    # ---------------------------------------------------
-    result_kwh.success(f"📊 **Predicted Monthly Consumption:** {predicted_kwh:.2f} kWh")
-    result_bill.success(f"💡 **Estimated Monthly Bill:** ₱{expected_bill:.2f}")
+    kwh = float(model.predict(input_df)[0])
+    kwh = max(kwh, 0)
+
+    bill = kwh * tariff
+
+    st.success(f"✅ Predicted Monthly Consumption: **{kwh:.2f} kWh**")
+    st.success(f"💵 Estimated Monthly Bill: **₱{bill:.2f}**")
+
+    st.subheader("Debug Input Data")
+    st.dataframe(input_df)
+
+import streamlit as st
+import pandas as pd
+import joblib
+import numpy as np
+
+# ----------------------------------------------------------
+# Load trained model
+# ----------------------------------------------------------
+try:
+    data = joblib.load("cepalco_monthly_model.pkl")
+    model = data["model"]
+    features = data["features"]
+except:
+    st.error("Model file not found! Make sure cepalco_monthly_model.pkl is in the same folder.")
+    st.stop()
+
+
+# ----------------------------------------------------------
+# Streamlit UI
+# ----------------------------------------------------------
+st.title("📉 Monthly Electricity Consumption Predictor")
+st.write("Predict monthly kWh consumption and electricity bill.")
+
+# ----------------------------------------------------------
+# Input fields
+# ----------------------------------------------------------
+temperature = st.number_input("Temperature (°C)", min_value=-50, max_value=60, value=30)
+humidity = st.number_input("Humidity (%)", min_value=0, max_value=100, value=70)
+occupancy = st.number_input("Occupancy (people)", min_value=1, max_value=50, value=4)
+appliances = st.number_input("Number of Appliances Used", min_value=1, max_value=50, value=12)
+
+day = st.selectbox(
+    "Day of Week",
+    ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+)
+
+tariff = st.number_input("Tariff (₱ per kWh)", min_value=0.01, value=12.52)
+
+# ----------------------------------------------------------
+# Convert day to numeric
+# ----------------------------------------------------------
+day_map = {
+    "Monday":0,"Tuesday":1,"Wednesday":2,
+    "Thursday":3,"Friday":4,"Saturday":5,"Sunday":6
+}
+
+day_value = day_map[day]
+
+# ----------------------------------------------------------
+# Handle weather dummy columns automatically
+# ----------------------------------------------------------
+weather_cols = [c for c in features if c.startswith("weather_")]
+
+weather_inputs = {}
+if weather_cols:
+    st.subheader("Weather Conditions")
+    for col in weather_cols:
+        weather_inputs[col] = st.checkbox(col.replace("weather_", "").capitalize(), value=False)
+
+# ----------------------------------------------------------
+# Build input dataframe
+# ----------------------------------------------------------
+input_dict = {
+    "temperature": temperature,
+    "humidity": humidity,
+    "occupancy": occupancy,
+    "number_of_appliances_used": appliances,
+    "day_of_week": day_value,
+    "tariff_rs_per_kwh": tariff
+}
+
+# add weather values
+for col in weather_cols:
+    input_dict[col] = int(weather_inputs[col])
+
+input_df = pd.DataFrame([input_dict])[features]
+
+# ----------------------------------------------------------
+# Prediction
+# ----------------------------------------------------------
+if st.button("🔮 Predict"):
+
+    kwh = float(model.predict(input_df)[0])
+    kwh = max(kwh, 0)
+
+    bill = kwh * tariff
+
+    st.success(f"✅ Predicted Monthly Consumption: **{kwh:.2f} kWh**")
+    st.success(f"💵 Estimated Monthly Bill: **₱{bill:.2f}**")
+
+    st.subheader("Debug Input Data")
+    st.dataframe(input_df)
 

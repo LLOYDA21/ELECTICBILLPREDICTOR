@@ -93,17 +93,44 @@ if st.session_state.page == "signup" and not st.session_state.logged_in:
     signup_name = st.text_input("Full Name")
     
     if st.button("Create Account"):
-        try:
-            auth.create_user_with_email_and_password(signup_email, signup_pass)
-            st.success("Account created! You may login.")
-            st.session_state.page = "login"
-            st.experimental_rerun()
-        except:
-            st.error("Failed to create account")
+        if signup_email and signup_pass and signup_name:
+            try:
+                # Create user
+                user = auth.create_user_with_email_and_password(signup_email, signup_pass)
+                # Update display name in Firebase (optional, for internal tracking)
+                auth.send_email_verification(user['idToken'])  # Send verification email
+                st.success("Account created! Please verify your email before login. Check your inbox.")
+                st.session_state.page = "login"
+                st.experimental_rerun()
+            except Exception as e:
+                st.error(f"Failed to create account: {e}")
+        else:
+            st.warning("Please fill in all fields.")
+
+# -----------------------------
+# LOGIN PAGE
+# -----------------------------
+if st.session_state.page == "login" and not st.session_state.logged_in:
+    st.title("Login")
+    login_email = st.text_input("Email")
+    login_pass = st.text_input("Password", type="password")
     
-    if st.button("Back to Login"):
-        st.session_state.page = "login"
-        st.experimental_rerun()
+    if st.button("Login"):
+        try:
+            user = auth.sign_in_with_email_and_password(login_email, login_pass)
+            user_info = auth.get_account_info(user['idToken'])
+            email_verified = user_info['users'][0]['emailVerified']
+
+            if email_verified:
+                st.session_state.logged_in = True
+                st.session_state.user_email = login_email
+                st.session_state.user_name = user_info['users'][0].get('displayName', login_email.split("@")[0].capitalize())
+                st.session_state.page = "dashboard"
+                st.experimental_rerun()
+            else:
+                st.warning("Please verify your email before logging in. Check your inbox.")
+        except Exception as e:
+            st.error(f"Invalid email or password: {e}")
 
 # -----------------------------
 # DASHBOARD PAGE
@@ -149,6 +176,8 @@ if st.session_state.page == "dashboard" and st.session_state.logged_in:
         col1, col2 = st.columns(2)
         col1.metric("Total Estimated kWh", round(pred_kwh, 2))
         col2.metric("Total Estimated Bill (₱)", round(estimated_bill, 2))
+
+
 
 
 

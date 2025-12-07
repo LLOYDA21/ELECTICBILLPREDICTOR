@@ -5,7 +5,7 @@ import joblib
 # Load trained multi-output model (predicts kWh + Bill)
 model = joblib.load("ElectricityKwhPredictor.pkl")
 
-# Set page config and black & white theme
+# Page theme
 st.set_page_config(page_title="Electricity Predictor", layout="centered")
 st.markdown(
     """
@@ -30,10 +30,13 @@ st.markdown(
 )
 
 # ----------------------------
-# Initialize session state
+# Session State Initialization
 # ----------------------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
+
+if "page" not in st.session_state:
+    st.session_state.page = "login"  # login → signup → dashboard
 
 if "users" not in st.session_state:
     st.session_state.users = {
@@ -42,13 +45,11 @@ if "users" not in st.session_state:
     }
 
 # ----------------------------
-# LOGIN / SIGNUP (NO SELECT MODE)
+# LOGIN PAGE
 # ----------------------------
-if not st.session_state.logged_in:
-    st.title("Welcome")
-    st.subheader("Login")
+if st.session_state.page == "login" and not st.session_state.logged_in:
+    st.title("Login")
 
-    # LOGIN FIELDS
     login_email = st.text_input("Login Email")
     login_pass = st.text_input("Login Password", type="password")
 
@@ -56,37 +57,51 @@ if not st.session_state.logged_in:
         if login_email in st.session_state.users and st.session_state.users[login_email]["password"] == login_pass:
             st.session_state.logged_in = True
             st.session_state.user = st.session_state.users[login_email]["name"]
+            st.session_state.page = "dashboard"
             st.experimental_rerun()
         else:
             st.error("Invalid email or password")
 
-    st.subheader("Sign Up")
+    st.write("")
+    if st.button("Sign Up"):
+        st.session_state.page = "signup"
+        st.experimental_rerun()
 
-    # SIGN UP FIELDS
-    signup_email = st.text_input("Sign Up Email")
-    signup_pass = st.text_input("Sign Up Password", type="password")
+# ----------------------------
+# SIGN UP PAGE
+# ----------------------------
+if st.session_state.page == "signup" and not st.session_state.logged_in:
+    st.title("Create Account")
+
+    signup_email = st.text_input("Email")
+    signup_pass = st.text_input("Password", type="password")
     signup_name = st.text_input("Full Name")
 
-    if st.button("Sign Up"):
+    if st.button("Create Account"):
         if signup_email in st.session_state.users:
             st.error("Email already exists")
         elif not signup_name:
-            st.error("Please enter your name")
+            st.error("Please enter your full name")
         else:
             st.session_state.users[signup_email] = {
                 "password": signup_pass,
                 "name": signup_name
             }
             st.success("Account created! You may now login.")
+            st.session_state.page = "login"
+            st.experimental_rerun()
+
+    if st.button("Back to Login"):
+        st.session_state.page = "login"
+        st.experimental_rerun()
 
 # ----------------------------
-# DASHBOARD (AFTER LOGIN)
+# DASHBOARD PAGE
 # ----------------------------
-if st.session_state.logged_in:
+if st.session_state.page == "dashboard" and st.session_state.logged_in:
     st.title(f"Welcome, {st.session_state.user}!")
     st.subheader("Electricity Usage & Bill Predictor")
 
-    # Input fields
     fan = st.number_input("Fan hours", min_value=0)
     ac = st.number_input("AC hours", min_value=0)
     ref = st.number_input("Refrigerator hours", min_value=0)
@@ -109,8 +124,7 @@ if st.session_state.logged_in:
         st.success(f"Predicted kWh Consumption: **{pred_kwh:.2f} kWh**")
         st.success(f"Estimated Electricity Bill: **₱{pred_bill:.2f}**")
 
-    # Logout button
     if st.button("Logout"):
         st.session_state.logged_in = False
-        st.session_state.user = ""
+        st.session_state.page = "login"
         st.experimental_rerun()

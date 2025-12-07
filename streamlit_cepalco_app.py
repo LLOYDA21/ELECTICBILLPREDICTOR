@@ -134,7 +134,7 @@ if st.session_state.page == "dashboard" and st.session_state.logged_in:
         estimated_bill = pred_kwh * 12.52   # Bill = kWh * 12.52
 
         # Show summary metrics only
-        st.subheader("Summary")
+        st.subheader("Predicted")
         col1, col2 = st.columns(2)
         col1.metric("Total Estimated kWh", round(pred_kwh, 2))
         col2.metric("Total Estimated Bill (₱)", round(estimated_bill, 2))
@@ -145,3 +145,4 @@ if st.session_state.page == "dashboard" and st.session_state.logged_in:
         st.session_state.user_email = None
         st.session_state.user_name = None
         st.experimental_rerun()
+

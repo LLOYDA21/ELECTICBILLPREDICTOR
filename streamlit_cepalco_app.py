@@ -51,39 +51,6 @@ if "user_name" not in st.session_state:
     st.session_state.user_name = None
 
 # -----------------------------
-# LOGIN PAGE
-# -----------------------------
-if st.session_state.page == "login" and not st.session_state.logged_in:
-    st.title("Login")
-    login_email = st.text_input("Email")
-    login_pass = st.text_input("Password", type="password")
-    
-    if st.button("Login"):
-        try:
-            auth.sign_in_with_email_and_password(login_email, login_pass)
-            st.session_state.logged_in = True
-            st.session_state.user_email = login_email
-            st.session_state.user_name = login_email.split("@")[0].capitalize()
-            st.session_state.page = "dashboard"
-            st.experimental_rerun()
-        except:
-            st.error("Invalid email or password")
-
-    if st.button("Forgot Password?"):
-        if login_email:
-            try:
-                auth.send_password_reset_email(login_email)
-                st.success(f"Password reset email sent to {login_email}")
-            except:
-                st.error("Failed to send reset email")
-        else:
-            st.warning("Enter email first")
-
-    if st.button("Sign Up"):
-        st.session_state.page = "signup"
-        st.experimental_rerun()
-
-# -----------------------------
 # SIGN UP PAGE
 # -----------------------------
 if st.session_state.page == "signup" and not st.session_state.logged_in:
@@ -97,8 +64,10 @@ if st.session_state.page == "signup" and not st.session_state.logged_in:
             try:
                 # Create user
                 user = auth.create_user_with_email_and_password(signup_email, signup_pass)
-                # Update display name in Firebase (optional, for internal tracking)
-                auth.send_email_verification(user['idToken'])  # Send verification email
+                # Send verification email
+                auth.send_email_verification(user['idToken'])
+                # Save full name in session state temporarily
+                st.session_state.full_name_temp = signup_name
                 st.success("Account created! Please verify your email before login. Check your inbox.")
                 st.session_state.page = "login"
                 st.experimental_rerun()
@@ -106,6 +75,10 @@ if st.session_state.page == "signup" and not st.session_state.logged_in:
                 st.error(f"Failed to create account: {e}")
         else:
             st.warning("Please fill in all fields.")
+    
+    if st.button("Back to Login"):
+        st.session_state.page = "login"
+        st.experimental_rerun()
 
 # -----------------------------
 # LOGIN PAGE
@@ -124,13 +97,30 @@ if st.session_state.page == "login" and not st.session_state.logged_in:
             if email_verified:
                 st.session_state.logged_in = True
                 st.session_state.user_email = login_email
-                st.session_state.user_name = user_info['users'][0].get('displayName', login_email.split("@")[0].capitalize())
+                # Use displayName if set, otherwise fallback to temporary stored name or email
+                st.session_state.user_name = user_info['users'][0].get('displayName',
+                                               st.session_state.get("full_name_temp",
+                                                                     login_email.split("@")[0].capitalize()))
                 st.session_state.page = "dashboard"
                 st.experimental_rerun()
             else:
                 st.warning("Please verify your email before logging in. Check your inbox.")
         except Exception as e:
             st.error(f"Invalid email or password: {e}")
+
+    if st.button("Sign Up"):
+        st.session_state.page = "signup"
+        st.experimental_rerun()
+
+    if st.button("Forgot Password?"):
+        if login_email:
+            try:
+                auth.send_password_reset_email(login_email)
+                st.success(f"Password reset email sent to {login_email}")
+            except:
+                st.error("Failed to send reset email")
+        else:
+            st.warning("Enter email first")
 
 # -----------------------------
 # DASHBOARD PAGE
@@ -176,8 +166,3 @@ if st.session_state.page == "dashboard" and st.session_state.logged_in:
         col1, col2 = st.columns(2)
         col1.metric("Total Estimated kWh", round(pred_kwh, 2))
         col2.metric("Total Estimated Bill (₱)", round(estimated_bill, 2))
-
-
-
-
-

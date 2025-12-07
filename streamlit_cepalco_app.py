@@ -121,63 +121,23 @@ if st.session_state.page == "dashboard" and st.session_state.logged_in:
     pump = st.number_input("Motor Pump hours", min_value=0)
 
     if st.button("Predict"):
-    data = pd.DataFrame([{
-        "FanHours": fan,
-        "ACHours": ac,
-        "RefHours": ref,
-        "TVHours": tv,
-        "MonitorHours": monitor,
-        "PumpHours": pump
-    }])
-    
-    pred_kwh, _ = model.predict(data)[0]  # We use only kWh from model
-    estimated_bill = pred_kwh * 12.52   # Bill = kWh * 12.52
+        data = pd.DataFrame([{
+            "FanHours": fan,
+            "ACHours": ac,
+            "RefHours": ref,
+            "TVHours": tv,
+            "MonitorHours": monitor,
+            "PumpHours": pump
+        }])
+        
+        pred_kwh, _ = model.predict(data)[0]  # We use only kWh from model
+        estimated_bill = pred_kwh * 12.52   # Bill = kWh * 12.52
 
-    # Create table like the template
-    df = pd.DataFrame({
-        "Appliance": ["Fan","AC","Refrigerator","TV","Monitor","Pump"],
-        "Hours": [fan, ac, ref, tv, monitor, pump],
-        "Estimated kWh": [pred_kwh, pred_kwh, pred_kwh, pred_kwh, pred_kwh, pred_kwh],  # optional per appliance
-        "Estimated Bill (₱)": [round(estimated_bill,2)]*6
-    })
-
-    # Show table
-    st.subheader("Monthly Usage & Estimated Bill")
-    st.dataframe(df, use_container_width=True)
-
-    # Summary metrics
-    st.subheader("Summary")
-    col1, col2 = st.columns(2)
-    col1.metric("Total Estimated kWh", round(pred_kwh,2))
-    col2.metric("Total Estimated Bill (₱)", round(estimated_bill,2))
-
-        df = pd.DataFrame({
-            "Appliance": ["Fan","AC","Refrigerator","TV","Monitor","Pump"],
-            "Hours": [fan, ac, ref, tv, monitor, pump],
-            "Estimated kWh": [round(pred_kwh*fan/pred_kwh,2), 
-                              round(pred_kwh*ac/pred_kwh,2),
-                              round(pred_kwh*ref/pred_kwh,2),
-                              round(pred_kwh*tv/pred_kwh,2),
-                              round(pred_kwh*monitor/pred_kwh,2),
-                              round(pred_kwh*pump/pred_kwh,2)],
-            "Estimated Bill": [round(pred_bill*fan/pred_bill,2),
-                               round(pred_bill*ac/pred_bill,2),
-                               round(pred_bill*ref/pred_bill,2),
-                               round(pred_bill*tv/pred_bill,2),
-                               round(pred_bill*monitor/pred_bill,2),
-                               round(pred_bill*pump/pred_bill,2)]
-        })
-
-        # Show table
-        st.subheader("Monthly Usage & Estimated Bill")
-        st.dataframe(df, use_container_width=True)
-
-        # Summary metrics
-        total_due = df["Estimated Bill"].sum()
+        # Show summary metrics only
         st.subheader("Summary")
         col1, col2 = st.columns(2)
-        col1.metric("Total Estimated kWh", round(pred_kwh,2))
-        col2.metric("Total Estimated Bill (₱)", round(total_due,2))
+        col1.metric("Total Estimated kWh", round(pred_kwh, 2))
+        col2.metric("Total Estimated Bill (₱)", round(estimated_bill, 2))
 
     if st.button("Logout"):
         st.session_state.logged_in = False
@@ -185,4 +145,3 @@ if st.session_state.page == "dashboard" and st.session_state.logged_in:
         st.session_state.user_email = None
         st.session_state.user_name = None
         st.experimental_rerun()
-

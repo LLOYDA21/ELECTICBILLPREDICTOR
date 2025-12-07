@@ -2,8 +2,8 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# Load trained model
-model = joblib.load("ElectricityPredictor.pkl")
+# Load trained multi-output model
+model = joblib.load("ElectricityKwhPredictor.pkl")
 
 # Set page config and black & white theme
 st.set_page_config(page_title="Electricity Predictor", layout="centered")
@@ -24,7 +24,8 @@ st.markdown(
         border: 1px solid #FFFFFF;
     }
     </style>
-    """, unsafe_allow_html=True
+    """,
+    unsafe_allow_html=True
 )
 
 # ----------------------------
@@ -76,7 +77,7 @@ if not st.session_state.logged_in:
 # ----------------------------
 if st.session_state.logged_in:
     st.title(f"Welcome, {st.session_state.user}!")
-    st.subheader("Electricity Bill Predictor")
+    st.subheader("Electricity Usage & Bill Predictor")
     
     fan = st.number_input("Fan hours", min_value=0)
     ac = st.number_input("AC hours", min_value=0)
@@ -85,7 +86,7 @@ if st.session_state.logged_in:
     monitor = st.number_input("Monitor hours", min_value=0)
     pump = st.number_input("Motor Pump hours", min_value=0)
     
-    if st.button("Predict Electricity Bill"):
+    if st.button("Predict Usage & Bill"):
         data = pd.DataFrame([{
             "FanHours": fan,
             "ACHours": ac,
@@ -94,8 +95,12 @@ if st.session_state.logged_in:
             "MonitorHours": monitor,
             "PumpHours": pump
         }])
-        prediction = model.predict(data)[0]
-        st.success(f"Estimated Electricity Bill: ₱{prediction:.2f}")
+
+        # Model outputs two predictions: [kWh, Bill]
+        pred_kwh, pred_bill = model.predict(data)[0]
+
+        st.success(f"Predicted kWh Consumption: **{pred_kwh:.2f} kWh**")
+        st.success(f"Estimated Electricity Bill: **₱{pred_bill:.2f}**")
     
     if st.button("Logout"):
         st.session_state.logged_in = False

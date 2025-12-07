@@ -5,33 +5,70 @@ import joblib
 # Load trained model
 model = joblib.load("ElectricityPredictor.pkl")
 
+# Set page config and dark theme (black & white)
+st.set_page_config(page_title="Electricity Predictor", layout="centered")
+st.markdown(
+    """
+    <style>
+    body {
+        background-color: #000000;
+        color: #FFFFFF;
+    }
+    .stButton>button {
+        background-color: #FFFFFF;
+        color: #000000;
+    }
+    input, .stTextInput>div>input {
+        background-color: #000000;
+        color: #FFFFFF;
+        border: 1px solid #FFFFFF;
+    }
+    </style>
+    """, unsafe_allow_html=True
+)
+
 # ----------------------------
 # Simulated Login System
 # ----------------------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
-
-if not st.session_state.logged_in:
-    st.title("Login")
-    
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
-    
-    # Simulated user database
-    users = {
+if "users" not in st.session_state:
+    # Predefined users
+    st.session_state.users = {
         "user1@gmail.com": {"password": "123456", "name": "User One"},
         "user2@gmail.com": {"password": "abcdef", "name": "User Two"}
     }
+
+if not st.session_state.logged_in:
+    st.title("Login or Sign Up")
     
-    if st.button("Login"):
-        if email in users and users[email]["password"] == password:
-            st.session_state.logged_in = True
-            st.session_state.user = users[email]["name"]
-        else:
-            st.error("Invalid email or password")
+    mode = st.radio("Select Mode", ["Login", "Sign Up"])
     
-    st.markdown("No account? Sign up functionality can be added here.")
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+    name = ""
     
+    if mode == "Sign Up":
+        name = st.text_input("Full Name")
+    
+    if st.button(mode):
+        if mode == "Login":
+            if email in st.session_state.users and st.session_state.users[email]["password"] == password:
+                st.session_state.logged_in = True
+                st.session_state.user = st.session_state.users[email]["name"]
+                st.success(f"Logged in as {st.session_state.user}")
+                st.experimental_rerun()
+            else:
+                st.error("Invalid email or password")
+        elif mode == "Sign Up":
+            if email in st.session_state.users:
+                st.error("Email already registered")
+            elif not name:
+                st.error("Please enter your full name")
+            else:
+                st.session_state.users[email] = {"password": password, "name": name}
+                st.success("Account created! You can now log in.")
+
 else:
     # ----------------------------
     # Dashboard for Prediction

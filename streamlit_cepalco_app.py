@@ -54,19 +54,29 @@ if st.session_state.page == "login" and not st.session_state.logged_in:
     login_email = st.text_input("Login Email")
     login_pass = st.text_input("Login Password", type="password")
 
-    if st.button("Login"):
-        try:
-            user = auth.sign_in_with_email_and_password(login_email, login_pass)
-            st.session_state.logged_in = True
-            st.session_state.user_email = login_email
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("Login"):
+            try:
+                user = auth.sign_in_with_email_and_password(login_email, login_pass)
+                st.session_state.logged_in = True
+                st.session_state.user_email = login_email
+                st.session_state.user_name = login_email.split("@")[0].capitalize()
+                st.session_state.page = "dashboard"
+                st.success("Logged in successfully!")
+                st.experimental_rerun()
+            except:
+                st.error("Invalid email or password")
 
-            # Optional: fetch display name from Firebase User profile
-            st.session_state.user_name = login_email.split("@")[0].capitalize()
-            st.session_state.page = "dashboard"
-            st.success("Logged in successfully!")
-            st.experimental_rerun()
-        except:
-            st.error("Invalid email or password")
+        if st.button("Forgot Password?"):
+            if login_email:
+                try:
+                    auth.send_password_reset_email(login_email)
+                    st.success(f"Password reset email sent to {login_email}")
+                except:
+                    st.error("Failed to send reset email. Check the email address.")
+            else:
+                st.warning("Please enter your email first")
 
     if st.button("Sign Up"):
         st.session_state.page = "signup"
@@ -85,8 +95,6 @@ if st.session_state.page == "signup" and not st.session_state.logged_in:
     if st.button("Create Account"):
         try:
             user = auth.create_user_with_email_and_password(signup_email, signup_pass)
-            
-            # Optional: set display name in Firebase (requires REST API)
             st.success("Account created! You may now login.")
             st.session_state.page = "login"
             st.experimental_rerun()

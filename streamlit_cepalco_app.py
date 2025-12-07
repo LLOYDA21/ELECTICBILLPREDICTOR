@@ -22,58 +22,95 @@ def set_bg_local(image_file):
     """
     st.markdown(page_bg, unsafe_allow_html=True)
 
-# CALL THE BACKGROUND IMAGE HERE
-set_bg_local("backgrd.jpg")   # <-- Change this to your image filename
+set_bg_local("backgrd.jpg")
 
 # ---------------------------------------------------
-# PAGE CONTENT
+# PAGE CONFIG
 # ---------------------------------------------------
-st.set_page_config(page_title="⚡ CEPALCO Electricity Bill Predictor", layout="wide")
-st.title("⚡ CEPALCO Electricity Bill Predictor")
+st.set_page_config(page_title="⚡ CEPALCO Monthly Bill Predictor", layout="wide")
+st.title("⚡ CEPALCO Monthly Electricity Bill Predictor")
 
-model_file = "cepalco_model_from_csv.pkl"
+# ---------------------------------------------------
+# LOAD MODEL
+# ---------------------------------------------------
+model_file = "cepalco_monthly_model.pkl"
 data = joblib.load(model_file)
 model = data["model"]
 scaler = data["scaler"]
-features = data["features"]
+features = data["features"]   # includes weather_* columns
 
-st.header("Enter Your Household Data")
+# List of weather conditions from training
+weather_options = [col.replace("weather_", "") for col in features if col.startswith("weather_")]
 
-num_appliances = st.number_input("Number of Appliances", min_value=0, step=1)
-daily_peak_hours = st.number_input("Daily Peak Hours", min_value=0.0, step=0.1)
-aircon_hours = st.number_input("Aircon Usage Hours", min_value=0.0, step=0.1)
-fridge_count = st.number_input("Number of Refrigerators", min_value=0, step=1)
-washing_machine_hours = st.number_input("Washing Machine Usage Hours", min_value=0.0, step=0.1)
-household_size = st.number_input("Household Size", min_value=1, step=1)
-month = st.number_input("Month (1-12)", min_value=1, max_value=12, step=1)
+# ---------------------------------------------------
+# USER INPUT FORM
+# ---------------------------------------------------
+st.header("Enter Required Information")
 
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    temperature = st.number_input("Temperature (°C)", min_value=-10.0, max_value=50.0, step=0.1)
+    humidity = st.number_input("Humidity (%)", min_value=0.0, max_value=100.0, step=0.1)
+    occupancy = st.number_input("Number of People in Household", min_value=1, step=1)
+
+with col2:
+    appliances = st.number_input("Number of Appliances Used", min_value=0, step=1)
+    day_of_week = st.selectbox("Day of Week", 
+        ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    )
+    
+with col3:
+    tariff = st.number_input("CEPALCO Rate per kWh (₱)", min_value=1.0, value=12.52, step=0.1)
+    weather = st.selectbox("Weather Condition", weather_options)
+
+# Mapping day to number
+day_map = {
+    "Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3,
+    "Friday": 4, "Saturday": 5, "Sunday": 6
+}
+
+# Containers for results
 result_kwh = st.empty()
 result_bill = st.empty()
 
-if st.button("Predict kWh Consumption"):
+# ---------------------------------------------------
+# PREDICTION
+# ---------------------------------------------------
+if st.button("Predict Monthly Consumption"):
+    
+    # Base input
     input_data = {
-        "Number_of_Appliances": num_appliances,
-        "Daily_Peak_Hours": daily_peak_hours,
-        "Aircon_Usage_Hours": aircon_hours,
-        "Refrigerator_Count": fridge_count,
-        "Washing_Machine_Usage": washing_machine_hours,
-        "Household_Size": household_size,
-        "Month": month
+        "temperature": temperature,
+        "humidity": humidity,
+        "occupancy": occupancy,
+        "number_of_appliances_used": appliances,
+        "day_of_week": day_map[day_of_week],
+        "tariff_rs_per_kwh": tariff
     }
 
-    input_data["Total_Appliance_Hours"] = (
-        input_data["Number_of_Appliances"] * input_data["Daily_Peak_Hours"]
-    )
+    # Add weather encoded columns
+    for col in features:
+        if col.startswith("weather_"):
+            condition = col.replace("weather_", "")
+            input_data[col] = 1 if condition == weather else 0
 
+    # Convert to DataFrame
     input_df = pd.DataFrame([input_data])
+
+    # Scale numeric data
     input_scaled = scaler.transform(input_df[features])
-    prediction = model.predict(input_scaled)[0]
 
-    kwh_rate = 12.52
-    expected_bill = prediction * kwh_rate
+    # Predict monthly kWh
+    predicted_kwh = model.predict(input_scaled)[0]
+    predicted_kwh = max(predicted_kwh, 0)
 
-    result_kwh.success(f"Predicted Monthly kWh Consumption: {prediction:.2f} kWh")
-    result_bill.success(f"Expected Monthly Electric Bill: {expected_bill:.2f} pesos")
+    # Compute bill
+    expected_bill = predicted_kwh * tariff
 
-
+    # ---------------------------------------------------
+    # DISPLAY RESULTS
+    # ---------------------------------------------------
+    result_kwh.success(f"📊 **Predicted Monthly Consumption:** {predicted_kwh:.2f} kWh")
+    result_bill.success(f"💡 **Estimated Monthly Bill:** ₱{expected_bill:.2f}")
 

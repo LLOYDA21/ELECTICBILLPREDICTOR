@@ -94,22 +94,19 @@ if st.session_state.page == "signup" and not st.session_state.logged_in:
     signup_pass = st.text_input("Password", type="password")
     signup_name = st.text_input("Full Name")
 
-    # Horizontal alignment for Create Account and Back to Login
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Create Account"):
-            try:
-                user = auth.create_user_with_email_and_password(signup_email, signup_pass)
-                st.success("Account created! You may now login.")
-                st.session_state.page = "login"
-                st.experimental_rerun()
-            except:
-                st.error("Failed to create account. Email may already exist or password is weak.")
-
-    with col2:
-        if st.button("Back to Login"):
+    # Left-aligned, vertically stacked buttons
+    if st.button("Create Account"):
+        try:
+            user = auth.create_user_with_email_and_password(signup_email, signup_pass)
+            st.success("Account created! You may now login.")
             st.session_state.page = "login"
             st.experimental_rerun()
+        except:
+            st.error("Failed to create account. Email may already exist or password is weak.")
+
+    if st.button("Back to Login"):
+        st.session_state.page = "login"
+        st.experimental_rerun()
 
 # ----------------------------
 # DASHBOARD PAGE
@@ -146,4 +143,5 @@ if st.session_state.page == "dashboard" and st.session_state.logged_in:
         st.session_state.user_email = None
         st.session_state.user_name = None
         st.experimental_rerun()
+
 

@@ -54,6 +54,7 @@ if st.session_state.page == "login" and not st.session_state.logged_in:
     login_email = st.text_input("Login Email")
     login_pass = st.text_input("Login Password", type="password")
 
+    # Center all buttons and align vertically
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         if st.button("Login"):
@@ -78,9 +79,9 @@ if st.session_state.page == "login" and not st.session_state.logged_in:
             else:
                 st.warning("Please enter your email first")
 
-    if st.button("Sign Up"):
-        st.session_state.page = "signup"
-        st.experimental_rerun()
+        if st.button("Sign Up"):
+            st.session_state.page = "signup"
+            st.experimental_rerun()
 
 # ----------------------------
 # SIGN UP PAGE
@@ -92,18 +93,21 @@ if st.session_state.page == "signup" and not st.session_state.logged_in:
     signup_pass = st.text_input("Password", type="password")
     signup_name = st.text_input("Full Name")
 
-    if st.button("Create Account"):
-        try:
-            user = auth.create_user_with_email_and_password(signup_email, signup_pass)
-            st.success("Account created! You may now login.")
+    # Center buttons
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("Create Account"):
+            try:
+                user = auth.create_user_with_email_and_password(signup_email, signup_pass)
+                st.success("Account created! You may now login.")
+                st.session_state.page = "login"
+                st.experimental_rerun()
+            except:
+                st.error("Failed to create account. Email may already exist or password is weak.")
+
+        if st.button("Back to Login"):
             st.session_state.page = "login"
             st.experimental_rerun()
-        except:
-            st.error("Failed to create account. Email may already exist or password is weak.")
-
-    if st.button("Back to Login"):
-        st.session_state.page = "login"
-        st.experimental_rerun()
 
 # ----------------------------
 # DASHBOARD PAGE

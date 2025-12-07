@@ -109,7 +109,18 @@ if st.session_state.page == "signup" and not st.session_state.logged_in:
 # DASHBOARD PAGE
 # -----------------------------
 if st.session_state.page == "dashboard" and st.session_state.logged_in:
-    st.title(f"Welcome, {st.session_state.user_name}!")
+    # Top bar with Logout button
+    col_left, col_right = st.columns([9, 1])
+    with col_left:
+        st.title(f"Welcome, {st.session_state.user_name}!")
+    with col_right:
+        if st.button("Logout"):
+            st.session_state.logged_in = False
+            st.session_state.page = "login"
+            st.session_state.user_email = None
+            st.session_state.user_name = None
+            st.experimental_rerun()
+
     st.subheader("Electricity Usage & Bill Predictor")
 
     # Input hours
@@ -139,10 +150,5 @@ if st.session_state.page == "dashboard" and st.session_state.logged_in:
         col1.metric("Total Estimated kWh", round(pred_kwh, 2))
         col2.metric("Total Estimated Bill (₱)", round(estimated_bill, 2))
 
-    if st.button("Logout"):
-        st.session_state.logged_in = False
-        st.session_state.page = "login"
-        st.session_state.user_email = None
-        st.session_state.user_name = None
-        st.experimental_rerun()
+
 

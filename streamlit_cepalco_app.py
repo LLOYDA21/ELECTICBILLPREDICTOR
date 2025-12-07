@@ -7,7 +7,7 @@ import numpy as np
 # Load trained model
 # ----------------------------------------------------------
 try:
-    data = joblib.load("cepalco_monthly_model.pkl")
+    data = joblib.load("datasets.pkl")
     model = data["model"]
     features = data["features"]
 except:
@@ -183,4 +183,5 @@ if st.button("🔮 Predict"):
 
     st.subheader("Debug Input Data")
     st.dataframe(input_df)
+
 

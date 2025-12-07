@@ -79,7 +79,7 @@ joblib.dump(
         "model": model,
         "features": features
     },
-    "cepalco_monthly_model.pkl",
+    "datasets.pkl",
     compress=9
 )
 
@@ -105,3 +105,4 @@ bill = kwh * example["tariff_rs_per_kwh"]
 print("\nExample Prediction:")
 print("Predicted kWh =", kwh)
 print("Monthly bill =", bill)
+

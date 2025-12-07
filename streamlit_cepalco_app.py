@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import joblib
+from firebase_config import auth  # your pyrebase auth object
 
 # Load trained multi-output model (predicts kWh + Bill)
 model = joblib.load("ElectricityKwhPredictor.pkl")
@@ -38,11 +39,11 @@ if "logged_in" not in st.session_state:
 if "page" not in st.session_state:
     st.session_state.page = "login"  # login → signup → dashboard
 
-if "users" not in st.session_state:
-    st.session_state.users = {
-        "user1@gmail.com": {"password": "123456", "name": "User One"},
-        "user2@gmail.com": {"password": "abcdef", "name": "User Two"}
-    }
+if "user_email" not in st.session_state:
+    st.session_state.user_email = None
+
+if "user_name" not in st.session_state:
+    st.session_state.user_name = None
 
 # ----------------------------
 # LOGIN PAGE
@@ -54,15 +55,19 @@ if st.session_state.page == "login" and not st.session_state.logged_in:
     login_pass = st.text_input("Login Password", type="password")
 
     if st.button("Login"):
-        if login_email in st.session_state.users and st.session_state.users[login_email]["password"] == login_pass:
+        try:
+            user = auth.sign_in_with_email_and_password(login_email, login_pass)
             st.session_state.logged_in = True
-            st.session_state.user = st.session_state.users[login_email]["name"]
+            st.session_state.user_email = login_email
+
+            # Optional: fetch display name from Firebase User profile
+            st.session_state.user_name = login_email.split("@")[0].capitalize()
             st.session_state.page = "dashboard"
+            st.success("Logged in successfully!")
             st.experimental_rerun()
-        else:
+        except:
             st.error("Invalid email or password")
 
-    st.write("")
     if st.button("Sign Up"):
         st.session_state.page = "signup"
         st.experimental_rerun()
@@ -78,18 +83,15 @@ if st.session_state.page == "signup" and not st.session_state.logged_in:
     signup_name = st.text_input("Full Name")
 
     if st.button("Create Account"):
-        if signup_email in st.session_state.users:
-            st.error("Email already exists")
-        elif not signup_name:
-            st.error("Please enter your full name")
-        else:
-            st.session_state.users[signup_email] = {
-                "password": signup_pass,
-                "name": signup_name
-            }
+        try:
+            user = auth.create_user_with_email_and_password(signup_email, signup_pass)
+            
+            # Optional: set display name in Firebase (requires REST API)
             st.success("Account created! You may now login.")
             st.session_state.page = "login"
             st.experimental_rerun()
+        except:
+            st.error("Failed to create account. Email may already exist or password is weak.")
 
     if st.button("Back to Login"):
         st.session_state.page = "login"
@@ -99,7 +101,7 @@ if st.session_state.page == "signup" and not st.session_state.logged_in:
 # DASHBOARD PAGE
 # ----------------------------
 if st.session_state.page == "dashboard" and st.session_state.logged_in:
-    st.title(f"Welcome, {st.session_state.user}!")
+    st.title(f"Welcome, {st.session_state.user_name}!")
     st.subheader("Electricity Usage & Bill Predictor")
 
     fan = st.number_input("Fan hours", min_value=0)
@@ -127,4 +129,6 @@ if st.session_state.page == "dashboard" and st.session_state.logged_in:
     if st.button("Logout"):
         st.session_state.logged_in = False
         st.session_state.page = "login"
+        st.session_state.user_email = None
+        st.session_state.user_name = None
         st.experimental_rerun()

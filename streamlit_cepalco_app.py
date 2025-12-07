@@ -48,44 +48,43 @@ if "user_name" not in st.session_state:
 # ----------------------------
 # LOGIN PAGE
 # ----------------------------
+# ----------------------------
+# LOGIN PAGE
+# ----------------------------
 if st.session_state.page == "login" and not st.session_state.logged_in:
     st.title("Login")
 
     login_email = st.text_input("Login Email")
     login_pass = st.text_input("Login Password", type="password")
 
-    # Horizontal alignment for Login, Forgot Password, Sign Up
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        if st.button("Login"):
-            try:
-                user = auth.sign_in_with_email_and_password(login_email, login_pass)
-                st.session_state.logged_in = True
-                st.session_state.user_email = login_email
-                st.session_state.user_name = login_email.split("@")[0].capitalize()
-                st.session_state.page = "dashboard"
-                st.success("Logged in successfully!")
-                st.experimental_rerun()
-            except:
-                st.error("Invalid email or password")
-
-    with col2:
-        if st.button("Forgot Password?"):
-            if login_email:
-                try:
-                    auth.send_password_reset_email(login_email)
-                    st.success(f"Password reset email sent to {login_email}")
-                except:
-                    st.error("Failed to send reset email. Check the email address.")
-            else:
-                st.warning("Please enter your email first")
-
-    with col3:
-        if st.button("Sign Up"):
-            st.session_state.page = "signup"
+    # Vertically stacked, left-aligned buttons
+    if st.button("Login"):
+        try:
+            user = auth.sign_in_with_email_and_password(login_email, login_pass)
+            st.session_state.logged_in = True
+            st.session_state.user_email = login_email
+            st.session_state.user_name = login_email.split("@")[0].capitalize()
+            st.session_state.page = "dashboard"
+            st.success("Logged in successfully!")
             st.experimental_rerun()
+        except:
+            st.error("Invalid email or password")
 
-# ----------------------------
+    if st.button("Forgot Password?"):
+        if login_email:
+            try:
+                auth.send_password_reset_email(login_email)
+                st.success(f"Password reset email sent to {login_email}")
+            except:
+                st.error("Failed to send reset email. Check the email address.")
+        else:
+            st.warning("Please enter your email first")
+
+    if st.button("Sign Up"):
+        st.session_state.page = "signup"
+        st.experimental_rerun()
+
+# ---------------------------
 # SIGN UP PAGE
 # ----------------------------
 if st.session_state.page == "signup" and not st.session_state.logged_in:
@@ -147,3 +146,4 @@ if st.session_state.page == "dashboard" and st.session_state.logged_in:
         st.session_state.user_email = None
         st.session_state.user_name = None
         st.experimental_rerun()
+

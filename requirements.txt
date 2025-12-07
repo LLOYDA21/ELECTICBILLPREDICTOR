@@ -3,3 +3,4 @@ pandas
 scikit-learn
 joblib
 pyrebase4
+setuptools
